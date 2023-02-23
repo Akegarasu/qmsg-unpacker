@@ -6,7 +6,7 @@ type TextElement struct {
 
 type ImageElement struct {
 	Path string
-	Hash string
+	Hash []byte
 }
 
 type FaceElement struct {
@@ -15,11 +15,11 @@ type FaceElement struct {
 }
 
 type VoiceElement struct {
-	Hash string
+	Hash []byte
 }
 
 type VideoElement struct {
-	Hash string
+	Hash []byte
 }
 
 func (e *TextElement) Type() ElementType {
