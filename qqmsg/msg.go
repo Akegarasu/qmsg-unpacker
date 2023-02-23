@@ -89,7 +89,7 @@ func DecodeNickname(b []byte) string {
 	for !buf.empty() {
 		t, _, v := buf.TLV()
 		switch t {
-		case 2:
+		case 1, 2:
 			return DecodeUtf16(v)
 		}
 	}
@@ -135,7 +135,7 @@ func DecodeImage(b []byte) MsgElem {
 		t, _, v := buf.TLV()
 		switch t {
 		case 1:
-			elem.Hash = hex.EncodeToString(v)
+			elem.Hash = v
 		case 2:
 			elem.Path = DecodeUtf16(v)
 		}
@@ -149,7 +149,7 @@ func DecodeVoice(b []byte) MsgElem {
 		t, _, v := buf.TLV()
 		switch t {
 		case 1:
-			return &VoiceElement{Hash: hex.EncodeToString(v)}
+			return &VoiceElement{Hash: v}
 		}
 	}
 	return nil
@@ -165,7 +165,7 @@ func DecodeVideo(b []byte) MsgElem {
 			for i := range h {
 				h[i] ^= 0xEF
 			}
-			return &VideoElement{Hash: hex.EncodeToString(h)}
+			return &VideoElement{Hash: h}
 		}
 	}
 	return nil
@@ -179,11 +179,11 @@ func EncodeMsg(msg Msg) string {
 			case *TextElement:
 				ok += e.Content
 			case *ImageElement:
-				ok += fmt.Sprintf("[t:img,path=%s,hash=%s]", e.Path, e.Hash)
+				ok += fmt.Sprintf("[t:img,path=%s,hash=%s]", e.Path, hex.EncodeToString(e.Hash))
 			case *VoiceElement:
-				ok += fmt.Sprintf("[t:voice,hash=%s]", e.Hash)
+				ok += fmt.Sprintf("[t:voice,file=%s,hash=%s.amr]", encodeB48(e.Hash), hex.EncodeToString(e.Hash))
 			case *VideoElement:
-				ok += fmt.Sprintf("[t:video,hash=%s]", e.Hash)
+				ok += fmt.Sprintf("[t:video,hash=%s]", hex.EncodeToString(e.Hash))
 			case *FaceElement:
 				ok += fmt.Sprintf("[t:face,id=%d]", e.Id)
 			}

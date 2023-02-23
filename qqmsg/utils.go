@@ -2,6 +2,8 @@ package qqmsg
 
 import (
 	"encoding/binary"
+	"math/big"
+	"reflect"
 	"unicode/utf16"
 	"unsafe"
 )
@@ -74,4 +76,32 @@ func (b *Buffer) TLV() (t uint8, l uint16, v []byte) {
 	l = b.L()
 	v = b.Read(int(l))
 	return
+}
+
+const b48Dict = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ~@$%`(){}[]_"
+
+var bigZero = big.NewInt(0)
+var bigRadix = big.NewInt(48)
+
+func encodeB48(b []byte) string {
+	x := new(big.Int)
+	y := (*Int)(unsafe.Pointer(x))
+	yh := (*reflect.SliceHeader)(unsafe.Pointer(&y.abs))
+	bh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
+	yh.Data = bh.Data
+	yh.Cap = bh.Cap / int(unsafe.Sizeof(uint(0)))
+	yh.Len = bh.Len / int(unsafe.Sizeof(uint(0)))
+
+	ans := make([]byte, 0, 23)
+	for x.CmpAbs(bigZero) > 0 {
+		mod := new(big.Int)
+		x.DivMod(x, bigRadix, mod)
+		ans = append(ans, b48Dict[mod.Int64()])
+	}
+	return string(ans)
+}
+
+type Int struct {
+	neg bool   // sign
+	abs []uint // absolute value of the integer
 }
