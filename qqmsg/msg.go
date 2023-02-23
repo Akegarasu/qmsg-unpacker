@@ -149,7 +149,7 @@ func DecodeVoice(b []byte) MsgElem {
 		t, _, v := buf.TLV()
 		switch t {
 		case 1:
-			return &VoiceElement{Hash: v}
+			return &VoiceElement{Hash: copyByte(v)}
 		}
 	}
 	return nil
@@ -165,7 +165,7 @@ func DecodeVideo(b []byte) MsgElem {
 			for i := range h {
 				h[i] ^= 0xEF
 			}
-			return &VideoElement{Hash: h}
+			return &VideoElement{Hash: copyByte(h)}
 		}
 	}
 	return nil
@@ -181,7 +181,7 @@ func EncodeMsg(msg Msg) string {
 			case *ImageElement:
 				ok += fmt.Sprintf("[t:img,path=%s,hash=%s]", e.Path, hex.EncodeToString(e.Hash))
 			case *VoiceElement:
-				ok += fmt.Sprintf("[t:voice,file=%s,hash=%s.amr]", encodeB48(e.Hash), hex.EncodeToString(e.Hash))
+				ok += fmt.Sprintf("[t:voice,file=%s.amr,hash=%s]", encodeB48(e.Hash), hex.EncodeToString(e.Hash))
 			case *VideoElement:
 				ok += fmt.Sprintf("[t:video,hash=%s]", hex.EncodeToString(e.Hash))
 			case *FaceElement:
@@ -191,4 +191,10 @@ func EncodeMsg(msg Msg) string {
 		return ok
 	}
 	return encodeElem(msg.Elements)
+}
+
+func copyByte(v []byte) []byte {
+	b := make([]byte, len(v))
+	copy(b, v)
+	return b
 }

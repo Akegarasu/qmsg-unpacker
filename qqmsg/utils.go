@@ -84,6 +84,7 @@ var bigZero = big.NewInt(0)
 var bigRadix = big.NewInt(48)
 
 func encodeB48(b []byte) string {
+	b = copyByte(b)
 	x := new(big.Int)
 	y := (*Int)(unsafe.Pointer(x))
 	yh := (*reflect.SliceHeader)(unsafe.Pointer(&y.abs))
